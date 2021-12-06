@@ -19,6 +19,6 @@ export const Page: React.FC = ({ children }) => {
 const Main = styled("main", {
   maxWidth: "1440px",
   margin: "0 auto",
-  marginTop: "$6",
-  padding: "0 $5",
+  marginTop: "$40",
+  padding: "0 $8",
 });
