@@ -1,6 +1,6 @@
 import Head from "next/head";
 import React from "react";
-import { styled } from "../stitches.config";
+import "twin.macro";
 
 export const Page: React.FC = ({ children }) => {
   return (
@@ -11,14 +11,7 @@ export const Page: React.FC = ({ children }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Main>{children}</Main>
+      <main tw="flex flex-col min-h-screen px-8">{children}</main>
     </>
   );
 };
-
-const Main = styled("main", {
-  maxWidth: "1440px",
-  margin: "0 auto",
-  marginTop: "$40",
-  padding: "0 $8",
-});

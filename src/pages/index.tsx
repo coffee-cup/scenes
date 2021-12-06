@@ -1,29 +1,50 @@
 import type { NextPage } from "next";
-import React from "react";
+import React, { useRef, useState } from "react";
 import { Page } from "../layouts/Page";
-import { styled } from "../stitches.config";
-import { Text } from "../components/Text";
+import { Canvas, useFrame } from "@react-three/fiber";
+import tw from "twin.macro";
 
 const Home: NextPage = () => {
   return (
     <Page>
-      <Header>
-        <Title>scenes</Title>
-        <Text>an experiment.</Text>
-      </Header>
+      <header tw="pt-12 pb-8">
+        <h1 tw="text-accent font-bold text-3xl">scenes.</h1>
+      </header>
 
-      <Text>boop</Text>
+      <div css={[tw`flex-grow flex flex-col`, { border: "dotted 2px red" }]}>
+        <Canvas tw="flex-grow">
+          <ambientLight />
+          <pointLight position={[10, 10, 10]} />
+
+          <Cube position={[0, 0, 0]} />
+        </Canvas>
+      </div>
     </Page>
   );
 };
 
 export default Home;
 
-const Header = styled("header", {
-  marginBottom: "$20",
-});
+const Cube: React.FC = (props) => {
+  const mesh = useRef<any>();
+  const [hovered, hover] = useState(false);
+  const [clicked, click] = useState(false);
 
-const Title = styled("h1", {
-  color: "$amber10",
-  marginBottom: "$20",
-});
+  useFrame((state, delta) => {
+    mesh.current.rotation.x = mesh.current.rotation.y += 0.01;
+  });
+
+  return (
+    <mesh
+      {...props}
+      ref={mesh}
+      scale={clicked ? 1.5 : 1}
+      onClick={(event) => click(!clicked)}
+      onPointerOver={(event) => hover(true)}
+      onPointerOut={(event) => hover(false)}
+    >
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial color={hovered ? "hotpink" : "orange"} />
+    </mesh>
+  );
+};
