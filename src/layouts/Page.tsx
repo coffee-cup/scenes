@@ -11,7 +11,7 @@ export const Page: React.FC = ({ children }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main tw="flex flex-col min-h-screen px-8">{children}</main>
+      <main tw="flex flex-col min-h-screen pt-24 px-8 pb-8">{children}</main>
     </>
   );
 };
