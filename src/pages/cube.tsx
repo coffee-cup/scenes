@@ -1,11 +1,12 @@
-import { Center } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { Center, shaderMaterial } from "@react-three/drei";
+import { extend, useFrame } from "@react-three/fiber";
 import React, { useRef, useState } from "react";
 import * as THREE from "three";
 import "twin.macro";
 import { theme } from "twin.macro";
 import { Scene } from "../components/Scene";
 import { Page } from "../layouts/Page";
+import glsl from "babel-plugin-glsl/macro";
 
 export const Cube: React.FC = () => {
   return (
@@ -23,10 +24,36 @@ export const Cube: React.FC = () => {
 
 export default Cube;
 
+const ColorShiftMaterial = shaderMaterial(
+  { time: 0, color: new THREE.Color(0.2, 0.0, 0.1) },
+  // vertex shader
+  `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  // fragment shader
+  `
+    uniform float time;
+    uniform vec3 color;
+    varying vec2 vUv;
+    void main() {
+      gl_FragColor.rgba = vec4(0.5 + 0.3 * sin(vUv.yxx + time) + color, 1.0);
+    }
+  `
+);
+
+extend({ ColorShiftMaterial });
+
 const CubeItem: React.FC = (props) => {
   const mesh = useRef<any>();
   const [hovered, hover] = useState(false);
   const [clicked, click] = useState(false);
+
+  const ref = useRef<any>();
+  useFrame(({ clock }) => (ref.current.time = clock.getElapsedTime()));
 
   useFrame((state, delta) => {
     mesh.current.rotation.x = mesh.current.rotation.y += 0.005;
@@ -42,7 +69,10 @@ const CubeItem: React.FC = (props) => {
       onPointerOut={(event) => hover(false)}
     >
       <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color={hovered ? "hotpink" : "orange"} />
+
+      {/* @ts-ignore */}
+      <colorShiftMaterial attach="material" color="deeppink" ref={ref} />
+      {/* <meshStandardMaterial color={hovered ? "hotpink" : "orange"} /> */}
     </mesh>
   );
 };
