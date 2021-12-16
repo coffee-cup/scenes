@@ -1,15 +1,19 @@
-import { applyProps, Canvas } from "@react-three/fiber";
-import React from "react";
-import tw from "twin.macro";
-import * as THREE from "three";
 import { OrbitControls } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
+import React from "react";
+import "twin.macro";
 
 export const Scene: React.FC<{
   hideControls?: boolean;
-  camera?: THREE.Vector3;
+  camera?: [number, number, number];
 }> = ({ children, ...props }) => {
   return (
-    <Canvas tw="flex-grow" {...props} camera={{ position: props.camera }}>
+    <Canvas
+      tw="flex-grow"
+      {...props}
+      camera={{ position: props.camera, fov: 90 }}
+      shadows
+    >
       {children}
 
       {!props.hideControls && <OrbitControls />}
