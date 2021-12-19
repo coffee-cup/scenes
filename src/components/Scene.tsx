@@ -11,7 +11,7 @@ export const Scene: React.FC<{
     <Canvas
       tw="flex-grow"
       {...props}
-      camera={{ position: props.camera, fov: 90 }}
+      camera={{ position: props.camera }}
       shadows
     >
       {children}

@@ -1,19 +1,23 @@
-import { Stats } from "@react-three/drei";
-import {
-  Euler,
-  LightProps,
-  MeshProps,
-  useFrame,
-  useThree,
-  Vector3,
-} from "@react-three/fiber";
-import React, { useEffect, useRef, useState } from "react";
-import { Light, Mesh } from "three";
+import { useHelper } from "@react-three/drei";
+import { LightProps, MeshProps, useFrame, Vector3 } from "@react-three/fiber";
+import React, { useRef, useState } from "react";
 import * as THREE from "three";
+import { Light, Mesh, PointLightHelper } from "three";
 import "twin.macro";
 import { Scene } from "../components/Scene";
 import { Page } from "../layouts/Page";
-import { rand } from "../utils";
+import { rand, randItem } from "../utils";
+import { motion } from "framer-motion/three";
+import {
+  EffectComposer,
+  DepthOfField,
+  Bloom,
+  Noise,
+  Vignette,
+  SSAO,
+  Sepia,
+  Scanline,
+} from "@react-three/postprocessing";
 
 export const Pop: React.FC = () => {
   return (
@@ -22,6 +26,11 @@ export const Pop: React.FC = () => {
         <Lights />
 
         <BallGenerator />
+
+        <EffectComposer>
+          <Bloom intensity={100.0} luminanceThreshold={1.0} />
+          <SSAO />
+        </EffectComposer>
 
         {/* <Stats /> */}
       </Scene>
@@ -36,14 +45,17 @@ export interface Ball {
   position: Vector3;
   scale: number;
   born: number; // seconds
+  colour: string;
 }
 
 let ballId = 0;
 
-const FREQ = 0.5; // seconds
+const FREQ = 0.2; // seconds
 
 const min = -20;
 const max = 20;
+
+const colours = ["hotpink", "deeppink", "gold"];
 
 const randomBall = (): Ball => {
   return {
@@ -51,14 +63,17 @@ const randomBall = (): Ball => {
     position: [rand(min, max), rand(min, max), rand(min, max)],
     scale: rand(0.5, 1.5),
     born: new Date().getTime(),
+    colour: randItem(colours),
   };
 };
 
 const BallGenerator: React.FC = () => {
   const [balls, setBalls] = useState<Ball[]>([]);
-  const count = useRef(0);
+  const count = useRef(1);
 
   useFrame(({ mouse, camera, viewport, clock }) => {
+    if (mouse.x === 0 && mouse.y === 0) return;
+
     if (clock.elapsedTime > count.current * FREQ) {
       const vector = new THREE.Vector3(
         mouse.x,
@@ -70,28 +85,18 @@ const BallGenerator: React.FC = () => {
       const distance = camera.position.z - 5 - camera.position.z / dir.z;
       const pos = camera.position.clone().add(dir.multiplyScalar(distance));
 
-      count.current += 1;
       const newBall = { ...randomBall(), position: pos };
       setBalls(balls => [...balls, newBall]);
+
+      count.current += 1;
+      // count.current = Math.floor(clock.elapsedTime);
     }
   });
-
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     const newBall = randomBall();
-  //     const now = new Date().getTime();
-  //     setBalls(balls => [...balls, newBall]);
-  //   }, FREQ);
-
-  //   return () => {
-  //     clearInterval(interval);
-  //   };
-  // }, []);
 
   return (
     <>
       {balls.map(b => (
-        <SphereItem key={b.id} position={b.position} scale={b.scale} />
+        <SphereItem key={b.id} ball={b} />
       ))}
     </>
   );
@@ -99,58 +104,29 @@ const BallGenerator: React.FC = () => {
 
 const Lights: React.FC<LightProps> = props => {
   const ref = useRef<Light>(null!);
-  // useHelper(ref, DirectionalLightHelper, 1);
+  // useHelper(ref, PointLightHelper, 1);
 
   return (
     <>
       <ambientLight intensity={0.2} />
-      <directionalLight
-        ref={ref}
-        position={[0, 2, 0]}
-        castShadow
-        shadow-mapSize-height={512}
-        shadow-mapSize-width={512}
-      />
+      <pointLight position={[0, 0, 0]} ref={ref} intensity={2} />
+      <directionalLight />
     </>
   );
 };
 
-const RotatingBox: React.FC<MeshProps> = props => {
-  const myMesh = useRef<Mesh>(null!);
-
-  useFrame(({ clock }) => {
-    const a = clock.getElapsedTime();
-    myMesh.current.rotation.x = a;
-    myMesh.current.rotation.y = a * 0.4;
-    myMesh.current.rotation.z = a * 0.1;
-  });
-
-  return (
-    <mesh ref={myMesh} {...props}>
-      <boxBufferGeometry args={[1, 1]} />
-      <meshPhongMaterial color="gold" />
-    </mesh>
-  );
-};
-
-const SphereItem: React.FC<MeshProps> = props => {
+const SphereItem: React.FC<{ ball: Ball }> = ({ ball }) => {
   const mesh = useRef<Mesh>(null!);
 
   return (
-    <mesh {...props} ref={mesh}>
+    <motion.mesh
+      ref={mesh}
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      position={ball.position}
+    >
       <sphereBufferGeometry args={[0.5, 20, 20]} />
-      <meshPhongMaterial attach="material" color="deeppink" />
-    </mesh>
-  );
-};
-
-const Plane: React.FC<MeshProps> = props => {
-  const mesh = useRef<Mesh>(null!);
-
-  return (
-    <mesh ref={mesh} {...props} receiveShadow>
-      <planeBufferGeometry args={[10, 10]} />
-      <meshStandardMaterial color="#18003d" attach="material" />
-    </mesh>
+      <meshPhongMaterial attach="material" color={ball.colour} />
+    </motion.mesh>
   );
 };
