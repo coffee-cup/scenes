@@ -2,7 +2,7 @@ import { Sphere, Stats } from "@react-three/drei";
 import { LightProps, useFrame, useThree, Vector3 } from "@react-three/fiber";
 import { Bloom, EffectComposer, SSAO } from "@react-three/postprocessing";
 import { useControls } from "leva";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { Light, Mesh, MeshStandardMaterial } from "three";
 import "twin.macro";
@@ -16,9 +16,9 @@ const RED = "#C30F16";
 export const Pop: React.FC = () => {
   return (
     <Page>
-      <Scene tw="border-2 border-dotted border-violet-900" camera={[4, 4, 40]}>
+      <Scene tw="" camera={[4, 8, 40]}>
         <Lights />
-        {/* <Camera /> */}
+        <Camera />
 
         <BallGenerator />
 
@@ -64,7 +64,7 @@ const Camera: React.FC = () => {
     const x = camera.position.x;
     const z = camera.position.z;
 
-    const rotSpeed = 0.002;
+    const rotSpeed = 0.01;
 
     camera.position.x = x * Math.cos(rotSpeed) + z * Math.sin(rotSpeed);
     camera.position.z = z * Math.cos(rotSpeed) - x * Math.sin(rotSpeed);
@@ -81,15 +81,16 @@ export interface Ball {
   scale?: number;
   born: number; // seconds
   colour: string;
+  dead?: boolean;
 }
 
 let ballId = 0;
 
-const FREQ = 80; // seconds
-const LIFETIME = 10;
+const FREQ = 40; // seconds
+const LIFETIME = 6;
 
-const min = -30;
-const max = 30;
+const min = -40;
+const max = 40;
 
 const colours = [GREEN, RED, "white"];
 
@@ -98,7 +99,7 @@ const randomBall = (): Ball => {
     id: ballId++,
     position: [rand(min, max), rand(min, max), rand(min, max)],
     born: new Date().getTime(),
-    scale: rand(0.8, 1.2),
+    scale: rand(0.8, 1.6),
     colour: randItem(colours),
   };
 };
@@ -113,38 +114,24 @@ const BallGenerator: React.FC = () => {
 
       const now = new Date().getTime();
       setBalls(balls => [
-        ...balls.filter(b => now - b.born <= LIFETIME * 1000),
+        ...balls.filter(b => !b.dead && now - b.born <= LIFETIME * 1000),
         newBall,
       ]);
     }, FREQ);
   }, []);
 
-  // useFrame(({ mouse, camera, viewport, clock }) => {
-  //   if (mouse.x === 0 && mouse.y === 0) return;
-
-  //   if (clock.elapsedTime > count.current * FREQ) {
-  //     const vector = new THREE.Vector3(
-  //       mouse.x,
-  //       mouse.y,
-  //       camera.position.z + 0.5,
-  //     );
-  //     vector.unproject(camera);
-  //     const dir = vector.sub(camera.position).normalize();
-  //     const distance = camera.position.z - 5 - camera.position.z / dir.z;
-  //     const pos = camera.position.clone().add(dir.multiplyScalar(distance));
-
-  //     const newBall = { ...randomBall(), position: pos };
-  //     setBalls(balls => [...balls, newBall]);
-
-  //     count.current += 1;
-  //     // count.current = Math.floor(clock.elapsedTime);
-  //   }
-  // });
-
   return (
     <>
-      {balls.map(b => (
-        <SphereItem key={b.id} ball={b} />
+      {balls.map((ball, i) => (
+        <SphereItem
+          key={ball.id}
+          ball={ball}
+          onDeath={() =>
+            setBalls(balls =>
+              balls.map(b => (b.id === ball.id ? { ...b, dead: true } : b)),
+            )
+          }
+        />
       ))}
     </>
   );
@@ -163,7 +150,10 @@ const Lights: React.FC<LightProps> = props => {
   );
 };
 
-const SphereItem: React.FC<{ ball: Ball }> = ({ ball }) => {
+const SphereItem: React.FC<{ ball: Ball; onDeath: () => void }> = ({
+  ball,
+  onDeath,
+}) => {
   const mesh = useRef<Mesh>(null!);
 
   useFrame(({ clock }) => {
@@ -178,6 +168,10 @@ const SphereItem: React.FC<{ ball: Ball }> = ({ ball }) => {
       .subVectors(new THREE.Vector3(0, 0, 0), mesh.current.position)
       .normalize();
     mesh.current.position.add(dir.multiplyScalar(0.04));
+
+    if (mesh.current.position.manhattanLength() <= 0.5) {
+      onDeath();
+    }
   });
 
   return (
