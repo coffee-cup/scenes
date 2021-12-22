@@ -9,10 +9,7 @@ import { Page } from "../layouts/Page";
 export const Tetris: React.FC = () => {
   return (
     <Page>
-      <Scene
-        tw="border-2 border-dotted border-violet-900"
-        camera={new THREE.Vector3(8, 5, 40)}
-      >
+      <Scene tw="border-2 border-dotted border-violet-900" camera={[8, 5, 40]}>
         <ambientLight />
         <pointLight position={[-20, 10, 25]} />
         <gridHelper
@@ -33,7 +30,7 @@ export default Tetris;
 const extrudeSettings = { steps: 2, depth: 10, bevelEnabled: true };
 const SIDE = 10;
 
-const Block: React.FC = (props) => {
+const Block: React.FC = props => {
   const shape = useMemo(() => {
     const _shape = new THREE.Shape();
 
@@ -66,7 +63,7 @@ const Block: React.FC = (props) => {
   );
 };
 
-const Cube: React.FC = (props) => {
+const Cube: React.FC = props => {
   const mesh = useRef<any>();
   const [hovered, hover] = useState(false);
   const [clicked, click] = useState(false);
@@ -80,9 +77,9 @@ const Cube: React.FC = (props) => {
       {...props}
       ref={mesh}
       scale={clicked ? 1.5 : 1}
-      onClick={(event) => click(!clicked)}
-      onPointerOver={(event) => hover(true)}
-      onPointerOut={(event) => hover(false)}
+      onClick={event => click(!clicked)}
+      onPointerOver={event => hover(true)}
+      onPointerOut={event => hover(false)}
     >
       <boxGeometry args={[1, 1, 1]} />
       <meshStandardMaterial color={hovered ? "hotpink" : "orange"} />

@@ -1,34 +1,53 @@
-import { useHelper } from "@react-three/drei";
-import { LightProps, MeshProps, useFrame, Vector3 } from "@react-three/fiber";
-import React, { useRef, useState } from "react";
+import { Sphere, Stats } from "@react-three/drei";
+import { LightProps, useFrame, useThree, Vector3 } from "@react-three/fiber";
+import { Bloom, EffectComposer, SSAO } from "@react-three/postprocessing";
+import { useControls } from "leva";
+import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import { Light, Mesh, PointLightHelper } from "three";
+import { Light, Mesh, MeshStandardMaterial } from "three";
 import "twin.macro";
 import { Scene } from "../components/Scene";
 import { Page } from "../layouts/Page";
 import { rand, randItem } from "../utils";
-import { motion } from "framer-motion/three";
-import {
-  EffectComposer,
-  DepthOfField,
-  Bloom,
-  Noise,
-  Vignette,
-  SSAO,
-  Sepia,
-  Scanline,
-} from "@react-three/postprocessing";
+
+const GREEN = "#1E792C";
+const RED = "#C30F16";
 
 export const Pop: React.FC = () => {
   return (
     <Page>
-      <Scene tw="border-2 border-dotted border-violet-900" camera={[0, 0, 20]}>
+      <Scene tw="border-2 border-dotted border-violet-900" camera={[4, 4, 40]}>
         <Lights />
+        {/* <Camera /> */}
 
         <BallGenerator />
 
+        {/* <SphereItem
+          ball={{
+            id: 1,
+            born: 1,
+            colour: RED,
+            position: [-2, 0, 0],
+            scale: 1,
+          }}
+        />
+        <SphereItem
+          ball={{
+            id: 1,
+            born: 1,
+            colour: GREEN,
+            position: [2, 0, 0],
+            scale: 0.5,
+          }}
+        /> */}
+
         <EffectComposer>
-          <Bloom intensity={100.0} luminanceThreshold={1.0} />
+          <Bloom
+            intensity={1.0}
+            luminanceThreshold={0.1}
+            luminanceSmoothing={0.0025}
+          />
+          {/* <SelectiveBloom luminanceThreshold={0.1}  /> */}
           <SSAO />
         </EffectComposer>
 
@@ -40,58 +59,87 @@ export const Pop: React.FC = () => {
 
 export default Pop;
 
+const Camera: React.FC = () => {
+  useFrame(({ camera, clock }) => {
+    const x = camera.position.x;
+    const z = camera.position.z;
+
+    const rotSpeed = 0.002;
+
+    camera.position.x = x * Math.cos(rotSpeed) + z * Math.sin(rotSpeed);
+    camera.position.z = z * Math.cos(rotSpeed) - x * Math.sin(rotSpeed);
+
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
+  });
+
+  return null;
+};
+
 export interface Ball {
   id: number;
   position: Vector3;
-  scale: number;
+  scale?: number;
   born: number; // seconds
   colour: string;
 }
 
 let ballId = 0;
 
-const FREQ = 0.2; // seconds
+const FREQ = 80; // seconds
+const LIFETIME = 10;
 
-const min = -20;
-const max = 20;
+const min = -30;
+const max = 30;
 
-const colours = ["hotpink", "deeppink", "gold"];
+const colours = [GREEN, RED, "white"];
 
 const randomBall = (): Ball => {
   return {
     id: ballId++,
     position: [rand(min, max), rand(min, max), rand(min, max)],
-    scale: rand(0.5, 1.5),
     born: new Date().getTime(),
+    scale: rand(0.8, 1.2),
     colour: randItem(colours),
   };
 };
 
 const BallGenerator: React.FC = () => {
-  const [balls, setBalls] = useState<Ball[]>([]);
+  const [balls, setBalls] = useState<Ball[]>([randomBall()]);
   const count = useRef(1);
 
-  useFrame(({ mouse, camera, viewport, clock }) => {
-    if (mouse.x === 0 && mouse.y === 0) return;
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newBall = randomBall();
 
-    if (clock.elapsedTime > count.current * FREQ) {
-      const vector = new THREE.Vector3(
-        mouse.x,
-        mouse.y,
-        camera.position.z + 0.5,
-      );
-      vector.unproject(camera);
-      const dir = vector.sub(camera.position).normalize();
-      const distance = camera.position.z - 5 - camera.position.z / dir.z;
-      const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+      const now = new Date().getTime();
+      setBalls(balls => [
+        ...balls.filter(b => now - b.born <= LIFETIME * 1000),
+        newBall,
+      ]);
+    }, FREQ);
+  }, []);
 
-      const newBall = { ...randomBall(), position: pos };
-      setBalls(balls => [...balls, newBall]);
+  // useFrame(({ mouse, camera, viewport, clock }) => {
+  //   if (mouse.x === 0 && mouse.y === 0) return;
 
-      count.current += 1;
-      // count.current = Math.floor(clock.elapsedTime);
-    }
-  });
+  //   if (clock.elapsedTime > count.current * FREQ) {
+  //     const vector = new THREE.Vector3(
+  //       mouse.x,
+  //       mouse.y,
+  //       camera.position.z + 0.5,
+  //     );
+  //     vector.unproject(camera);
+  //     const dir = vector.sub(camera.position).normalize();
+  //     const distance = camera.position.z - 5 - camera.position.z / dir.z;
+  //     const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+
+  //     const newBall = { ...randomBall(), position: pos };
+  //     setBalls(balls => [...balls, newBall]);
+
+  //     count.current += 1;
+  //     // count.current = Math.floor(clock.elapsedTime);
+  //   }
+  // });
 
   return (
     <>
@@ -108,9 +156,9 @@ const Lights: React.FC<LightProps> = props => {
 
   return (
     <>
-      <ambientLight intensity={0.2} />
-      <pointLight position={[0, 0, 0]} ref={ref} intensity={2} />
-      <directionalLight />
+      <ambientLight intensity={0.1} />
+      {/* <pointLight position={[0, 0, 4]} ref={ref} intensity={0.5} /> */}
+      {/* <directionalLight /> */}
     </>
   );
 };
@@ -118,15 +166,30 @@ const Lights: React.FC<LightProps> = props => {
 const SphereItem: React.FC<{ ball: Ball }> = ({ ball }) => {
   const mesh = useRef<Mesh>(null!);
 
+  useFrame(({ clock }) => {
+    // Scale down
+    if (mesh.current.scale.x >= 0) {
+      mesh.current.scale.subScalar(0.001);
+    }
+
+    // Move towards center
+    const dir = new THREE.Vector3();
+    dir
+      .subVectors(new THREE.Vector3(0, 0, 0), mesh.current.position)
+      .normalize();
+    mesh.current.position.add(dir.multiplyScalar(0.04));
+  });
+
   return (
-    <motion.mesh
-      ref={mesh}
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      position={ball.position}
-    >
+    <mesh ref={mesh} position={ball.position}>
       <sphereBufferGeometry args={[0.5, 20, 20]} />
-      <meshPhongMaterial attach="material" color={ball.colour} />
-    </motion.mesh>
+      <meshPhongMaterial
+        attach="material"
+        color={ball.colour}
+        emissive={new THREE.Color(ball.colour)}
+        emissiveIntensity={0.8}
+        flatShading
+      />
+    </mesh>
   );
 };
