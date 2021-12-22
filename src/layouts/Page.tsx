@@ -2,7 +2,7 @@ import Head from "next/head";
 import React from "react";
 import "twin.macro";
 
-export const Page: React.FC = ({ children }) => {
+export const Page: React.FC = ({ children, ...props }) => {
   return (
     <>
       <Head>
@@ -11,7 +11,9 @@ export const Page: React.FC = ({ children }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main tw="flex flex-col h-screen">{children}</main>
+      <main tw="flex flex-col h-screen" {...props}>
+        {children}
+      </main>
     </>
   );
 };

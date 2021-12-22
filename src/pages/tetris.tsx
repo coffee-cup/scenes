@@ -8,7 +8,7 @@ import { Page } from "../layouts/Page";
 
 export const Tetris: React.FC = () => {
   return (
-    <Page>
+    <Page tw="p-8">
       <Scene tw="border-2 border-dotted border-violet-900" camera={[8, 5, 40]}>
         <ambientLight />
         <pointLight position={[-20, 10, 25]} />

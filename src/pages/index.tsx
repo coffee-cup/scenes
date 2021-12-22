@@ -6,7 +6,7 @@ import { Link } from "../components/Link";
 
 const Home: NextPage = () => {
   return (
-    <Page>
+    <Page tw="p-8">
       <div tw="max-w-4xl w-full mx-auto">
         <header tw="mt-12 mb-12">
           <h1 tw="text-accent font-bold text-4xl">scenes.</h1>
@@ -15,6 +15,7 @@ const Home: NextPage = () => {
         <ul tw="space-y-4">
           <SceneItem name="tetris" />
           <SceneItem name="cube" />
+          <SceneItem name="orbs" />
         </ul>
       </div>
     </Page>

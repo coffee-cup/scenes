@@ -11,7 +11,7 @@ import glsl from "babel-plugin-glsl/macro";
 export const Cube: React.FC = () => {
   return (
     <Page>
-      <Scene tw="border-2 border-dotted border-violet-900">
+      <Scene>
         <ambientLight color={theme`colors.pink.500`} />
         <pointLight position={[-4, 5, 2]} />
         <Center>
@@ -42,12 +42,12 @@ const ColorShiftMaterial = shaderMaterial(
     void main() {
       gl_FragColor.rgba = vec4(0.5 + 0.3 * sin(vUv.yxx + time) + color, 1.0);
     }
-  `
+  `,
 );
 
 extend({ ColorShiftMaterial });
 
-const CubeItem: React.FC = (props) => {
+const CubeItem: React.FC = props => {
   const mesh = useRef<any>();
   const [hovered, hover] = useState(false);
   const [clicked, click] = useState(false);
@@ -64,9 +64,9 @@ const CubeItem: React.FC = (props) => {
       {...props}
       ref={mesh}
       scale={clicked ? 4 : 2}
-      onClick={(event) => click(!clicked)}
-      onPointerOver={(event) => hover(true)}
-      onPointerOut={(event) => hover(false)}
+      onClick={event => click(!clicked)}
+      onPointerOver={event => hover(true)}
+      onPointerOut={event => hover(false)}
     >
       <boxGeometry args={[1, 1, 1]} />
 

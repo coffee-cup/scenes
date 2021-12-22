@@ -13,7 +13,7 @@ import { rand, randItem } from "../utils";
 const GREEN = "#1E792C";
 const RED = "#C30F16";
 
-export const Pop: React.FC = () => {
+export const Orbs: React.FC = () => {
   return (
     <Page>
       <Scene tw="" camera={[4, 8, 40]}>
@@ -57,7 +57,7 @@ export const Pop: React.FC = () => {
   );
 };
 
-export default Pop;
+export default Orbs;
 
 const Camera: React.FC = () => {
   useFrame(({ camera, clock }) => {
