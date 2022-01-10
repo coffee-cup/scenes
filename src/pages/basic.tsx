@@ -9,7 +9,11 @@ import { Page } from "../layouts/Page";
 export const Basic: React.FC = () => {
   return (
     <Page tw="p-8">
-      <Scene tw="border-2 border-dotted border-violet-900" camera={[1, 4, 6]}>
+      <Scene
+        tw="border-2 border-dotted border-violet-900"
+        camera={{ position: [1, 4, 6] }}
+        shadows
+      >
         <Lights />
 
         <RotatingBox position={[-2, 0, 0]} castShadow />

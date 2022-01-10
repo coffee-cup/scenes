@@ -13,9 +13,10 @@ const Home: NextPage = () => {
         </header>
 
         <ul tw="space-y-4">
-          <SceneItem name="tetris" />
+          <SceneItem name="orb" />
+          <SceneItem name="balls" />
           <SceneItem name="cube" />
-          <SceneItem name="orbs" />
+          <SceneItem name="tetris" />
         </ul>
       </div>
     </Page>
