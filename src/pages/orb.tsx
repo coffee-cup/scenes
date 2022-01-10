@@ -14,7 +14,7 @@ const Orb: React.FC = () => {
     <Page>
       <Leva hidden />
 
-      <Scene camera={{ position: [0, 0, 1.0] }}>
+      <Scene camera={{ position: [0, 0, 1.2] }} hideControls>
         <Lights />
         <SphereItem position={[0, 0, 0]} />
 
