@@ -1,24 +1,18 @@
-import * as THREE from "three";
-import { Stats, useHelper } from "@react-three/drei";
+import { useHelper } from "@react-three/drei";
 import { LightProps, MeshProps, useFrame } from "@react-three/fiber";
 import { Leva, useControls } from "leva";
 import React, { useRef } from "react";
-import {
-  DirectionalLightHelper,
-  Light,
-  Mesh,
-  MeshNormalMaterial,
-  MeshPhongMaterial,
-} from "three";
+import * as THREE from "three";
+import { HemisphereLightHelper, Light, Mesh } from "three";
 import "twin.macro";
 import { Scene } from "../components/Scene";
 import { Page } from "../layouts/Page";
-import { RectAreaLightHelper } from "three/examples/jsm/helpers/RectAreaLightHelper";
+import { clamp } from "../utils";
 
-export const Orb: React.FC = () => {
+const Orb: React.FC = () => {
   return (
     <Page>
-      <Leva />
+      <Leva hidden />
 
       <Scene camera={{ position: [0, 0, 1.0] }}>
         <Lights />
@@ -32,16 +26,19 @@ export const Orb: React.FC = () => {
 
 export default Orb;
 
-// const c1 = new THREE.Color("#001aff");
-const c1 = new THREE.Color("#e900ff");
+const c1 = new THREE.Color("#ff1e00");
+// const c1 = new THREE.Color("#e900ff");
 const c2 = new THREE.Color("#ff9000");
+const c3 = new THREE.Color("#e900ff");
 
 const Lights: React.FC<LightProps> = props => {
   const directionalLight = useRef<Light>(null!);
   // useHelper(directionalLight, DirectionalLightHelper, 1);
 
   const rectAreaLight = useRef<Light>(null!);
-  useHelper(rectAreaLight, RectAreaLightHelper);
+
+  const hemisphereLight = useRef<Light>(null!);
+  // useHelper(hemisphereLight, HemisphereLightHelper);
 
   useFrame(({ mouse }) => {
     rectAreaLight.current.lookAt(0, 0, 0);
@@ -51,25 +48,33 @@ const Lights: React.FC<LightProps> = props => {
     const r = Math.min(1, mouse.length());
     dirLight.color = dirLight.color.lerpColors(c1, c2, r);
 
-    const n = 20;
-    dirLight.position.set(mouse.x * n, mouse.y * n, dirLight.position.z);
+    const n = 80;
+    const clampVal = 400;
+    const mx = clamp(mouse.x * n, -clampVal, clampVal);
+    const my = clamp(mouse.y * n, -clampVal, clampVal);
+    dirLight.position.set(mx, my, dirLight.position.z);
   });
 
   return (
     <>
-      <ambientLight intensity={0.1} color={c1} />
+      {/* <ambientLight intensity={0.1} color={c3} /> */}
+      <hemisphereLight
+        ref={hemisphereLight}
+        args={["#ff0095", "#7508db"]}
+        intensity={0.2}
+      />
+
       <directionalLight
         ref={directionalLight}
         position={[0, 2, 10]}
-        intensity={3.0}
-        // color={"peachpuff"}
+        intensity={1.0}
         color={c1}
       />
 
       <rectAreaLight
         ref={rectAreaLight}
-        position={[1, 0.5, 4]}
-        intensity={0.0}
+        position={[-4, -2, 1]}
+        intensity={0.2}
         width={6}
         height={6}
         color={"cyan"}
@@ -88,7 +93,7 @@ const SphereItem: React.FC<MeshProps> = props => {
 
   return (
     <mesh {...props} ref={mesh}>
-      <sphereGeometry args={[0.5, 40, 40]} />
+      <sphereGeometry args={[0.5, 60, 60]} />
       <meshStandardMaterial
         attach="material"
         color="white"
