@@ -11,7 +11,7 @@ import { clamp } from "../utils";
 
 const Orb: React.FC = () => {
   return (
-    <Page>
+    <Page title="Orb">
       <Leva hidden />
 
       <Scene camera={{ position: [0, 0, 1.2] }} hideControls>

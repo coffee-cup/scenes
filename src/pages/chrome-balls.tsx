@@ -27,7 +27,7 @@ const ballSize = ballRadius * 2;
 
 const ChromeBalls: React.FC = () => {
   return (
-    <Page>
+    <Page title="Chrome Balls">
       <Leva hidden />
 
       <Scene camera={{ position: [0, 0.1, 7.4] }} shadows>

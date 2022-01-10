@@ -2,11 +2,11 @@ import Head from "next/head";
 import React from "react";
 import "twin.macro";
 
-export const Page: React.FC = ({ children, ...props }) => {
+export const Page: React.FC<{ title?: string }> = ({ children, ...props }) => {
   return (
     <>
       <Head>
-        <title>scenes</title>
+        <title>{props.title ?? "scenes"}</title>
         <meta name="description" content="" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
