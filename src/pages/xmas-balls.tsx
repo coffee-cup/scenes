@@ -13,7 +13,7 @@ import { rand, randItem } from "../utils";
 const GREEN = "#1E792C";
 const RED = "#C30F16";
 
-export const Balls: React.FC = () => {
+export const XmasBalls: React.FC = () => {
   return (
     <Page>
       <Scene tw="" camera={{ position: [4, 8, 40] }}>
@@ -57,7 +57,7 @@ export const Balls: React.FC = () => {
   );
 };
 
-export default Balls;
+export default XmasBalls;
 
 const Camera: React.FC = () => {
   useFrame(({ camera, clock }) => {

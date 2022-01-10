@@ -13,8 +13,9 @@ const Home: NextPage = () => {
         </header>
 
         <ul tw="space-y-4">
+          <SceneItem name="chrome balls" />
           <SceneItem name="orb" />
-          <SceneItem name="balls" />
+          <SceneItem name="xmas balls" />
           <SceneItem name="cube" />
           <SceneItem name="tetris" />
         </ul>
@@ -29,7 +30,7 @@ const SceneItem: React.FC<{ name: string }> = ({ name }) => {
   return (
     <li>
       <Link
-        href={`/${name}`}
+        href={`/${name.replace(" ", "-")}`}
         tw="underline text-lg hover:text-amber-300 font-bold"
       >
         {name}
