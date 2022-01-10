@@ -42,7 +42,7 @@ const ChromeBalls: React.FC = () => {
           />
         </Plane> */}
 
-        <Stats />
+        {/* <Stats /> */}
       </Scene>
     </Page>
   );
